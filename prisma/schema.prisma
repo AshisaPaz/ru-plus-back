@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
   email String @unique
   name String
   password String
@@ -24,45 +24,45 @@ model User {
 }
 
 model Wallet {
-  id String @id
+  id String @id @default(uuid())
   balance Float
 
-  idUser Int @unique
+  idUser String @unique
   User User @relation(fields: [idUser], references: [id])
 
   transaction Transaction[]
 }
 
 model Certificate {
-  id String @id
+  id String @id @default(uuid())
   pdf String 
   validy Int
 
-  idUser Int
+  idUser String
   User User @relation(fields: [idUser], references: [id])
 }
 
 model Deposit {
-  id String @id
+  id String @id @default(uuid())
   history Int 
 
-  idUser Int
+  idUser String
   User User @relation(fields: [idUser], references: [id])
 }
 
 model Transaction {
-  id String @id
+  id String @id @default(uuid())
   insertedValue DateTime
 
-  idWalletUser Int
+  idWalletUser String
   Wallet Wallet @relation(fields: [idWalletUser], references: [idUser])
 
-  idMeal Int
+  idMeal String
   Meal Meal @relation(fields: [idMeal], references: [id])
 }
 
 model Meal {
-  id Int @id 
+  id String @id @default(uuid())
   name String
   price Int 
 

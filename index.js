@@ -1,11 +1,7 @@
-import {router} from './route.js';
-import express from 'express';
-const app = express();
-
-app.use(express.json());
-app.use(router);
+require('dotenv').config();
+const app = require('./app');
 
 
-app.listen(3001, () => {
-    console.log("rodando na porta 3001");
+app.listen(3002, () => {
+    console.log("rodando na porta 3002");
 });
