@@ -18,7 +18,7 @@ model User {
   phone String 
   role String
 
-  wallet Wallet[]
+  wallet Wallet[] 
   certificate Certificate[]
   deposit Deposit[]
 }

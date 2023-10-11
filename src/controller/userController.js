@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient()
+const wallet = require('./walletController');
 
 async function createUser(req, res) {
     const {name, email, password, phone, role} = req.body
@@ -15,7 +16,23 @@ async function createUser(req, res) {
             return res.status(400).json({ error: "Email already exists" });
         }
         else{
-            const user = await prisma.user.create({data: {name, email, password, phone, role}});
+            const user = await prisma.user.create({
+                data: {
+                    name, 
+                    email, 
+                    password, 
+                    phone, 
+                    role,
+                    wallet: {
+                        create: {
+                            balance: 0,
+                        },
+                    },
+                },
+                include: {
+                    wallet: true,
+                },
+            });
             return res.status(200).json({message: "User created"});
             
         }
@@ -26,15 +43,26 @@ async function createUser(req, res) {
 }
 
 async function getUser(req, res) {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+        include: {
+            wallet: true,
+        },
+    });
 
-    return res.json(users)
+    return res.json(users);
 }
+
 
 async function getUserById(req, res) {
     const {id} = req.params;
     try {
-        const user = await prisma.user.findUnique({where: {id}});
+        const user = await prisma.user.findUnique({
+            where: {id},
+            include: {
+                wallet: true,
+            },
+        });
+        
 
         if(!user){
             return res.status(404).json({message: 'user not found'});
@@ -65,11 +93,16 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
     const {id} = req.params;
-
     try {
-        const user = await prisma.user.delete({where: {id}});
-
-        return res.status(200).json(user);
+        const user = await prisma.user.findUnique({ where: { id } });
+        const wallet = await prisma.wallet.findUnique({ where: { idUser: user.id } });
+        if (wallet) {
+            await prisma.wallet.delete({ where: { id: wallet.id } });
+        }
+        const deletedUser = await prisma.user.delete({
+            where: { id }
+        });
+        return res.status(200).json(deletedUser);
     } catch (err) {
         return res.status(500).json({error: err})
     }
@@ -79,7 +112,12 @@ async function loginUser(req, res) {
     const {email, password} = req.body
     
     try {
-        const user = await prisma.user.findUnique({where: {email}});
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email,
+                password: password,
+            }
+        });
         
         if (!user) {
             return res.status(404).json({error: "User not found"})
@@ -89,11 +127,13 @@ async function loginUser(req, res) {
             return res.status(401).json({error: "Incorrect password"})
         }
         
-        return res.status(200).json({message: "Login successful"})
+        return res.status(200).json(user)
     } catch (err) {
         return res.status(500).json({error: err})
     }
 }
+
+
 
 
 module.exports = {
@@ -105,10 +145,3 @@ module.exports = {
     deleteUser
 }
 
-// router.post("/user", async (req, res) => {
-//     const {email, name, password, phone, role} = req.body
-
-//     const user = await prisma.user.create({data: {email, name, password, phone, role}});
-
-//     return res.json(user)
-// });

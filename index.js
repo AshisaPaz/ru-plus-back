@@ -2,6 +2,6 @@ require('dotenv').config();
 const app = require('./app');
 
 
-app.listen(3002, () => {
-    console.log("rodando na porta 3002");
+app.listen(3001, () => {
+    console.log("rodando na porta 3001");
 });
