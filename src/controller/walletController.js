@@ -17,6 +17,9 @@ async function createWallet(req, res) {
                 balance,
                 idUser,
             },
+            include: {
+                transaction: true,
+            }
         });
         res.status(201).json(wallet);
     } catch (error) {
@@ -27,7 +30,11 @@ async function createWallet(req, res) {
 // READ
 async function getWallets(req, res) {
     try {
-        const wallets = await prisma.wallet.findMany();
+        const wallets = await prisma.wallet.findMany({
+            include: {
+                transaction: true,
+            }
+        });
         res.status(200).json(wallets);
     } catch (error) {
         res.status(500).json({ error: error.message });
