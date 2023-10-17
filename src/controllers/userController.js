@@ -1,7 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient()
-const wallet = require('./walletController');
 
 async function createUser(req, res) {
     const {name, email, password, phone, role} = req.body
@@ -132,9 +131,6 @@ async function loginUser(req, res) {
         return res.status(500).json({error: err})
     }
 }
-
-
-
 
 module.exports = {
     createUser,

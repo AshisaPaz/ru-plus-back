@@ -1,7 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
-// CREATE
 async function createWallet(req, res) {
     const { id, balance, idUser } = req.body;
     try {
@@ -17,9 +16,6 @@ async function createWallet(req, res) {
                 balance,
                 idUser,
             },
-            include: {
-                transaction: true,
-            }
         });
         res.status(201).json(wallet);
     } catch (error) {
@@ -27,8 +23,7 @@ async function createWallet(req, res) {
     }
 }
 
-// READ
-async function getWallets(req, res) {
+async function getWallets(res) {
     try {
         const wallets = await prisma.wallet.findMany({
             include: {
@@ -56,7 +51,6 @@ async function getWalletById(req, res) {
     }
 }
 
-// UPDATE
 async function updateWallet(req, res) {
     const { id } = req.params;
     const { amount } = req.body;
@@ -82,7 +76,6 @@ async function updateWallet(req, res) {
     }
 }
 
-// DELETE
 async function deleteWallet(req, res) {
     const { id } = req.params;
     try {
@@ -97,10 +90,48 @@ async function deleteWallet(req, res) {
     }
 }
 
+async function subtractFromWalletBalance(req) {
+    const { idMeal, idWalletUser } = req.body;
+    try {
+        const meal = await prisma.meal.findUnique({
+            where: {
+                id: idMeal,
+            },
+        });
+        if (!meal) {
+            throw new Error("Meal not found");
+        }
+        const wallet = await prisma.wallet.findUnique({
+            where: {
+                id: idWalletUser,
+            },
+        });
+        if (!wallet) {
+            throw new Error("Wallet not found");
+        }
+        const newBalance = wallet.balance - meal.price;
+        if (newBalance < 0) {
+            throw new Error("Insufficient funds");
+        }
+        await prisma.wallet.update({
+            where: {
+                id: idWalletUser,
+            },
+            data: {
+                balance: newBalance,
+            },
+        });
+        return newBalance;
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports = {
     createWallet,
     getWallets,
     getWalletById,
     updateWallet,
     deleteWallet,
+    subtractFromWalletBalance,
 };
