@@ -18,6 +18,17 @@ async function createMeal(req, res) {
     }
 }
 
+async function getMeals(req, res) {
+    try {
+        const meals = await prisma.meal.findMany();
+        res.status(200).json(meals);
+        return meals;
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     createMeal,
+    getMeals
 };

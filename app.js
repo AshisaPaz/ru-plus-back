@@ -19,4 +19,10 @@ app.use('/wallet', walletRoutes);
 app.use('/transaction', transactionRoutes);
 app.use('/meal', mealRoutes);
 
+app.post("/transaction/create", (req, res) => {
+    const { price, mealType } = req.body;
+
+    console.log(price, mealType);
+});
+
 module.exports = app;

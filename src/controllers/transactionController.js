@@ -3,10 +3,9 @@ const prisma = new PrismaClient();
 const walletController = require('../controllers/walletController');
 
 async function createTransaction(req, res) {
-    const { idWalletUser, idMeal } = req.body;
+    const {insertedValue, idWalletUser, idMeal } = req.body;
     const date = new Date("2023-10-16T14:30:00");
-    const insertedValue = date.toISOString(); 
-
+    // const insertedValue = date.toISOString(); 
     try {
         const newTransaction = await prisma.transaction.create({
             data: {
