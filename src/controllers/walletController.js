@@ -3,6 +3,7 @@ const prisma = new PrismaClient()
 
 async function createWallet(req, res) {
     const { id, balance, idUser } = req.body;
+   
     try {
         if (!idUser) {
             return res.status(400).json({ error: "Invalid user ID" });
@@ -55,7 +56,7 @@ async function updateWallet(req, res) {
     const { id } = req.params;
     const { amount } = req.body;
     try {
-        const user = await prisma.user.findUnique({ where: { id } });
+        const user = await prisma.user.findUnique({ where: { id: id } });
         const prev = await prisma.wallet.findUnique({ where: { idUser: id } });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
@@ -90,11 +91,12 @@ async function deleteWallet(req, res) {
     }
 }
 
-async function subtractFromWalletBalance(idUser, idMeal) {
+async function subtractFromWalletBalance(idUser, price, idWallet) {
+    console.log("aaaaa:", idUser, price, idWallet);
     try {
-      const wallet = await prisma.wallet.findUnique({
+      const wallet = await prisma.wallet.findFirst({
         where: {
-          id: idUser,
+          id: idWallet,
         },
       });
       const user = await prisma.user.findUnique({
@@ -102,15 +104,7 @@ async function subtractFromWalletBalance(idUser, idMeal) {
           id: wallet.idUser,
         },
       });
-      const meal = await prisma.meal.findUnique({
-        where: {
-          id: idMeal,
-        },
-      });
-      if (!meal) {
-        throw new Error("Meal not found");
-      }
-      const newBalance = wallet.balance - meal.price;
+      const newBalance = wallet.balance - price;
       if (newBalance < 0) {
         throw new Error("Insufficient funds");
       }
@@ -128,12 +122,7 @@ async function subtractFromWalletBalance(idUser, idMeal) {
       console.error(error);
       throw error;
     }
-  }
-  
-  
-  
-
-  
+}
 
 module.exports = {
     createWallet,

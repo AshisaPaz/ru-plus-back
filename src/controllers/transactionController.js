@@ -3,17 +3,23 @@ const prisma = new PrismaClient();
 const walletController = require('../controllers/walletController');
 
 async function createTransaction(req, res) {
-    let {insertedValue, idWalletUser, idMeal } = req.body;
+    let {insertedValue, idWalletUser, idMeal, idUser, price, idWallet } = req.body;
     const date = new Date("2023-10-16T14:30:00");
     insertedValue = date.toISOString(); 
     try {
       const newTransaction = await prisma.transaction.create({
         data: {
-          insertedValue,
           idWalletUser,
-          idMeal
-        }
+          idMeal,
+          insertedValue,
+          Wallet: {
+            connect: {
+              id: idWallet,
+            }
+          },
+        },
       });
+      // console.log(Meal);
       const transaction = await prisma.transaction.findFirst({
         where: {
           idWalletUser: idWalletUser,
@@ -30,7 +36,7 @@ async function createTransaction(req, res) {
         },
       });
       console.log("wallet: ", wallet.idUser);
-      const newBalance = await walletController.subtractFromWalletBalance(user.id, idMeal);
+      const newBalance = await walletController.subtractFromWalletBalance(idUser, price, idWallet);
       res.status(201).json({transaction: newTransaction, balance: newBalance});
       return newTransaction;
     } catch (error) {

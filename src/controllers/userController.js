@@ -115,9 +115,11 @@ async function loginUser(req, res) {
             where: {
                 email: email,
                 password: password,
-            }
+            },
+            include: {
+                wallet: true,
+            },
         });
-        
         if (!user) {
             return res.status(404).json({error: "User not found"})
         }
@@ -125,7 +127,7 @@ async function loginUser(req, res) {
         if (user.password !== password) {
             return res.status(401).json({error: "Incorrect password"})
         }
-        
+
         return res.status(200).json(user)
     } catch (err) {
         return res.status(500).json({error: err})

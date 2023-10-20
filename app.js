@@ -20,9 +20,9 @@ app.use('/transaction', transactionRoutes);
 app.use('/meal', mealRoutes);
 
 app.post("/transaction/create", (req, res) => {
-    const { price, mealType } = req.body;
+    const { price, mealType, idWallet } = req.body;
 
-    console.log(price, mealType);
+    console.log(price, mealType, idWallet);
 });
 
 module.exports = app;
