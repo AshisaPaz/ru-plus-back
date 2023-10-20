@@ -90,42 +90,50 @@ async function deleteWallet(req, res) {
     }
 }
 
-async function subtractFromWalletBalance(req) {
-    const { idMeal, idWalletUser } = req.body;
+async function subtractFromWalletBalance(idUser, idMeal) {
     try {
-        const meal = await prisma.meal.findUnique({
-            where: {
-                id: idMeal,
-            },
-        });
-        if (!meal) {
-            throw new Error("Meal not found");
-        }
-        const wallet = await prisma.wallet.findUnique({
-            where: {
-                id: idWalletUser,
-            },
-        });
-        if (!wallet) {
-            throw new Error("Wallet not found");
-        }
-        const newBalance = wallet.balance - meal.price;
-        if (newBalance < 0) {
-            throw new Error("Insufficient funds");
-        }
-        await prisma.wallet.update({
-            where: {
-                id: idWalletUser,
-            },
-            data: {
-                balance: newBalance,
-            },
-        });
-        return newBalance;
+      const wallet = await prisma.wallet.findUnique({
+        where: {
+          id: idUser,
+        },
+      });
+      const user = await prisma.user.findUnique({
+        where: {
+          id: wallet.idUser,
+        },
+      });
+      const meal = await prisma.meal.findUnique({
+        where: {
+          id: idMeal,
+        },
+      });
+      if (!meal) {
+        throw new Error("Meal not found");
+      }
+      const newBalance = wallet.balance - meal.price;
+      if (newBalance < 0) {
+        throw new Error("Insufficient funds");
+      }
+      const updatedWallet = await prisma.wallet.update({
+        where: {
+          idUser: user.id,
+        },
+        data: {
+          balance: newBalance,
+        },
+      });
+      console.log("updated wallet: ", updatedWallet);
+      return updatedWallet;
     } catch (error) {
-        throw error;
+      console.error(error);
+      throw error;
     }
-}
+  }
+  
+  
+  
+
+  
 
 module.exports = {
     createWallet,

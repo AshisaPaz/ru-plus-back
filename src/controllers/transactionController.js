@@ -3,24 +3,41 @@ const prisma = new PrismaClient();
 const walletController = require('../controllers/walletController');
 
 async function createTransaction(req, res) {
-    const {insertedValue, idWalletUser, idMeal } = req.body;
+    let {insertedValue, idWalletUser, idMeal } = req.body;
     const date = new Date("2023-10-16T14:30:00");
-    // const insertedValue = date.toISOString(); 
+    insertedValue = date.toISOString(); 
     try {
-        const newTransaction = await prisma.transaction.create({
-            data: {
-                insertedValue,
-                idWalletUser,
-                idMeal
-            }
-        });
-        const newBalance = await walletController.subtractFromWalletBalance(idWalletUser, idMeal);
-        res.status(201).json({transaction: newTransaction, balance: newBalance});
-        return newTransaction;
+      const newTransaction = await prisma.transaction.create({
+        data: {
+          insertedValue,
+          idWalletUser,
+          idMeal
+        }
+      });
+      const transaction = await prisma.transaction.findFirst({
+        where: {
+          idWalletUser: idWalletUser,
+        },
+      });
+      const user = await prisma.user.findUnique({
+        where: {
+          id: transaction.idWalletUser,
+        },
+      });
+      const wallet = await prisma.wallet.findUnique({
+        where: {
+          idUser: user.id,
+        },
+      });
+      console.log("wallet: ", wallet.idUser);
+      const newBalance = await walletController.subtractFromWalletBalance(user.id, idMeal);
+      res.status(201).json({transaction: newTransaction, balance: newBalance});
+      return newTransaction;
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
-}
+  }
+  
 
 async function getTransactions(res) {
     try {
