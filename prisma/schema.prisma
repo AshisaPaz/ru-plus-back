@@ -56,15 +56,14 @@ model Transaction {
   idWalletUser String
   Wallet Wallet @relation(fields: [idWalletUser], references: [idUser])
 
-  idMeal String
-  Meal Meal @relation(fields: [idMeal], references: [id])
+  mealName String
+  Meal Meal @relation(fields: [mealName], references: [name])
 
   createdAt DateTime @default(now())
 }
 
 model Meal {
-  id String @id @default(uuid())
-  name String
+  name String @id
   price Int 
 
   transaction Transaction[]
