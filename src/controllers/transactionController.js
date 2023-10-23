@@ -2,47 +2,61 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const walletController = require('../controllers/walletController');
 
-async function createTransaction(req, res) {
-    let {insertedValue, idWalletUser, idMeal, idUser, price, idWallet } = req.body;
-    const date = new Date("2023-10-16T14:30:00");
-    insertedValue = date.toISOString(); 
-    try {
-      const newTransaction = await prisma.transaction.create({
-        data: {
-          idWalletUser,
-          idMeal,
-          insertedValue,
-          Wallet: {
-            connect: {
-              id: idWallet,
-            }
+async function createTr(req, res) {
+  const { price, mealType, idUser, idWallet, idMeal} = req.body;
+  const user = await prisma.user.findUnique({
+    where: {
+      id: idUser,
+    },
+  });
+  const wallet = await prisma.wallet.findUnique({
+    where: {
+      id: idWallet,
+    },
+  });
+
+  const newBalance = wallet.balance - price;
+  if (newBalance < 0) {
+    return res.status(400).json({ error: "Not enough money" });
+  }
+
+  try {
+    const newTransaction = await prisma.transaction.create({
+      data: {
+        Wallet: {
+          connect: {
+            idUser: idUser,
           },
         },
-      });
-      // console.log(Meal);
-      const transaction = await prisma.transaction.findFirst({
-        where: {
-          idWalletUser: idWalletUser,
+        Meal: {
+          connect: {
+            id: idMeal,
+          },
         },
-      });
-      const user = await prisma.user.findUnique({
-        where: {
-          id: transaction.idWalletUser,
-        },
-      });
-      const wallet = await prisma.wallet.findUnique({
-        where: {
-          idUser: user.id,
-        },
-      });
-      console.log("wallet: ", wallet.idUser);
-      const newBalance = await walletController.subtractFromWalletBalance(idUser, price, idWallet);
-      res.status(201).json({transaction: newTransaction, balance: newBalance});
-      return newTransaction;
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+      },
+    });    
+    const transaction = await prisma.transaction.findFirst({
+      where: {
+        idWalletUser: user.id,
+      },
+    });
+    const wallet = await prisma.wallet.findUnique({
+      where: {
+        idUser: user.id,
+      },
+    });
+    const newBalance = await walletController.subtractFromWalletBalance(
+      idUser,
+      price,
+      idWallet
+    );
+    res.status(201).json({ transaction: newTransaction, balance: newBalance });
+    return newTransaction;
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
+
+}
   
 
 async function getTransactions(res) {
@@ -78,7 +92,7 @@ async function getTransactionByID(req, res) {
 }
 
 module.exports = {
-    createTransaction,
     getTransactions,
     getTransactionByID,
+    createTr,
 };

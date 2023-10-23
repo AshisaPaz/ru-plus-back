@@ -53,7 +53,8 @@ async function getUser(req, res) {
 
 
 async function getUserById(req, res) {
-    const {id} = req.params;
+    const {id} = req.body;
+    console.log(id, req.body);
     try {
         const user = await prisma.user.findUnique({
             where: {id},
@@ -99,7 +100,7 @@ async function deleteUser(req, res) {
             await prisma.wallet.delete({ where: { id: wallet.id } });
         }
         const deletedUser = await prisma.user.delete({
-            where: { id }
+            where: { id: user.id }
         });
         return res.status(200).json(deletedUser);
     } catch (err) {
@@ -142,4 +143,3 @@ module.exports = {
     updateUser,
     deleteUser
 }
-

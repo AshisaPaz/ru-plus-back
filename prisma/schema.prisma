@@ -52,13 +52,14 @@ model Deposit {
 
 model Transaction {
   id String @id @default(uuid())
-  insertedValue DateTime
 
   idWalletUser String
   Wallet Wallet @relation(fields: [idWalletUser], references: [idUser])
 
   idMeal String
   Meal Meal @relation(fields: [idMeal], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Meal {
