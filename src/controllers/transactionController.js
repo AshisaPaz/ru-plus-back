@@ -38,10 +38,8 @@ async function createTr(req, res) {
 
   console.log("Line 20:", user, wallet);
 
-  const newBalance = wallet.balance - price;
-
-  if (newBalance < 0) {
-    return res.status(400).json({ error: "Not enough money" });
+  if (wallet.balance < price) {
+    return res.status(400).json({ error: "Not enough funds" });
   }
 
   try {

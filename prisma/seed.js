@@ -7,7 +7,7 @@ const meals = [
     price: 3,
   },
   {
-    name: "SOPA/TORTA",
+    name: "SOPA OU BOLO",
     price: 1,
   },
   {
