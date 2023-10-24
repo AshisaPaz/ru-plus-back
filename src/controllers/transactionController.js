@@ -105,33 +105,31 @@ async function getTransactions(res) {
   }
 }
 
-async function getTransactionsByWallet(req, res) {
-  // eh essa funçao q pega o extrato
-  const user_id = req.params.id;
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: user_id,
-    },
-  });
-
-  if (!user) {
-    return res.status(400).json({ error: "User not found" });
-  }
-
-  const { idWalletUser } = user;
+async function getTransactionsByUser(req, res) {
+  const id = req.params.id;
 
   try {
+    const user = await prisma.wallet.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
     const transactions = await prisma.transaction.findMany({
       where: {
-        idWalletUser: idWalletUser,
+        idWalletUser: id,
       },
       take: 5,
       orderBy: {
         createdAt: "desc",
       },
     });
-    if (!transactions.length) {
+
+    if (!transactions) {
       res.status(400).json({ error: "Transactions not found" });
     } else {
       res.status(200).json(transactions);
@@ -143,6 +141,6 @@ async function getTransactionsByWallet(req, res) {
 
 module.exports = {
   getTransactions,
-  getTransactionsByWallet,
+  getTransactionsByUser,
   createTr,
 };
