@@ -92,7 +92,6 @@ async function deleteWallet(req, res) {
 }
 
 async function subtractFromWalletBalance(idUser, price, idWallet) {
-    console.log("aaaaa:", idUser, price, idWallet);
     try {
       const wallet = await prisma.wallet.findFirst({
         where: {

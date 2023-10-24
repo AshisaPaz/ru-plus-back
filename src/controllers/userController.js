@@ -54,7 +54,6 @@ async function getUser(req, res) {
 
 async function getUserById(req, res) {
     const {id} = req.body;
-    console.log(id, req.body);
     try {
         const user = await prisma.user.findUnique({
             where: {id},

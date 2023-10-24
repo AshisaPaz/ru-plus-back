@@ -5,6 +5,7 @@ const userController = require("../controllers/userController");
 
 async function createTr(req, res) {
   const { price, mealType, idUser, idWallet } = req.body;
+
   console.log("Received request to create transaction");
 
   if (!price || !mealType || !idUser || !idWallet) {
@@ -37,7 +38,7 @@ async function createTr(req, res) {
     },
   });
 
-  console.log("Line 20:", user, wallet);
+  console.log("Before:", user, wallet);
 
   if (wallet.balance < price) {
     return res.status(400).json({ error: "Not enough funds" });
@@ -61,15 +62,11 @@ async function createTr(req, res) {
       },
     });
 
-    console.log("newTransaction:", newTransaction);
-
     const transaction = await prisma.transaction.findFirst({
       where: {
         idWalletUser: user.id,
       },
     });
-
-    console.log(transaction);
 
     const wallet = await prisma.wallet.findUnique({
       where: {
@@ -77,13 +74,12 @@ async function createTr(req, res) {
       },
     });
 
-    console.log(wallet);
-
     const newBalance = await walletController.subtractFromWalletBalance(
       idUser,
       price,
       idWallet
     );
+    console.log("After:", user, wallet);
     res.status(201).json({ transaction: newTransaction, balance: newBalance });
     return newTransaction;
   } catch (error) {
@@ -105,20 +101,10 @@ async function getTransactions(res) {
   }
 }
 
-async function getTransactionsByUser(req, res) {
+async function getLatestTransactionsByUser(req, res) {
   const id = req.params.id;
 
   try {
-    const user = await prisma.wallet.findUnique({
-      where: {
-        id: id,
-      },
-    });
-
-    if (!user) {
-      return res.status(400).json({ error: "User not found" });
-    }
-
     const transactions = await prisma.transaction.findMany({
       where: {
         idWalletUser: id,
@@ -139,8 +125,32 @@ async function getTransactionsByUser(req, res) {
   }
 }
 
+async function getAllTransactionsByUser(req, res) {
+  const id = req.params.id;
+
+  try {
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        idWalletUser: id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!transactions) {
+      res.status(400).json({ error: "Transactions not found" });
+    } else {
+      res.status(200).json(transactions);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   getTransactions,
-  getTransactionsByUser,
+  getLatestTransactionsByUser,
+  getAllTransactionsByUser,
   createTr,
 };
