@@ -4,7 +4,7 @@ const transactionController = require("../controllers/transactionController");
 const router = express.Router();
 
 router.get("/", transactionController.getTransactions);
-router.get("/:id", transactionController.getTransactionByID);
+router.get("/:id", transactionController.getTransactionsByWallet);
 router.post("/createTr", transactionController.createTr);
 
 module.exports = router;

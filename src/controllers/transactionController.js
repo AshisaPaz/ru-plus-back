@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const walletController = require("../controllers/walletController");
+const userController = require("../controllers/userController");
 
 async function createTr(req, res) {
   const { price, mealType, idUser, idWallet } = req.body;
@@ -104,18 +105,36 @@ async function getTransactions(res) {
   }
 }
 
-async function getTransactionByID(req, res) {
-  const { id } = req.params;
+async function getTransactionsByWallet(req, res) {
+  // eh essa funçao q pega o extrato
+  const user_id = req.params.id;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: user_id,
+    },
+  });
+
+  if (!user) {
+    return res.status(400).json({ error: "User not found" });
+  }
+
+  const { idWalletUser } = user;
+
   try {
-    const transaction = await prisma.transaction.findUnique({
+    const transactions = await prisma.transaction.findMany({
       where: {
-        id,
+        idWalletUser: idWalletUser,
+      },
+      take: 5,
+      orderBy: {
+        createdAt: "desc",
       },
     });
-    if (!transaction) {
-      res.status(400).json({ error: "Transaction not found" });
+    if (!transactions.length) {
+      res.status(400).json({ error: "Transactions not found" });
     } else {
-      res.status(200).json(transaction);
+      res.status(200).json(transactions);
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -124,6 +143,6 @@ async function getTransactionByID(req, res) {
 
 module.exports = {
   getTransactions,
-  getTransactionByID,
+  getTransactionsByWallet,
   createTr,
 };
