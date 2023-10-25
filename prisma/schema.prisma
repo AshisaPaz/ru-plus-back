@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id String @id @default(uuid()) @map("_id")
+  id String @id @default(uuid())
   email String @unique
   name String
   password String
@@ -24,7 +24,7 @@ model User {
 }
 
 model Wallet {
-  id String @id @default(uuid()) @map("_id")
+  id String @id @default(uuid())
   balance Float
 
   idUser String @unique
@@ -34,7 +34,7 @@ model Wallet {
 }
 
 model Certificate {
-  id String @id @default(uuid()) @map("_id")
+  id String @id @default(uuid())
   pdf String 
   validy Int
 
@@ -43,7 +43,7 @@ model Certificate {
 }
 
 model Deposit {
-  id String @id @default(uuid()) @map("_id")
+  id String @id @default(uuid())
   history Int 
 
   idUser String
@@ -51,7 +51,7 @@ model Deposit {
 }
 
 model Transaction {
-  id String @id @default(uuid()) @map("_id")
+  id String @id @default(uuid())
 
   idWalletUser String
   Wallet Wallet @relation(fields: [idWalletUser], references: [idUser])
