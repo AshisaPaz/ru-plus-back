@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  name String
+  password String
+  phone String 
+  role String
+
+  wallet Wallet[] 
+  certificate Certificate[]
+  deposit Deposit[]
+}
+
+model Wallet {
+  id String @id @default(uuid())
+  balance Float
+
+  idUser String @unique
+  User User @relation(fields: [idUser], references: [id])
+
+  transaction Transaction[]
+}
+
+model Certificate {
+  id String @id @default(uuid())
+  pdf String 
+  validy Int
+
+  idUser String
+  User User @relation(fields: [idUser], references: [id])
+}
+
+model Deposit {
+  id String @id @default(uuid())
+  history Int 
+
+  idUser String
+  User User @relation(fields: [idUser], references: [id])
+}
+
+model Transaction {
+  id String @id @default(uuid())
+
+  idWalletUser String
+  Wallet Wallet @relation(fields: [idWalletUser], references: [idUser])
+
+  mealName String
+  Meal Meal @relation(fields: [mealName], references: [name])
+
+  createdAt DateTime @default(now())
+}
+
+model Meal {
+  name String @id
+  price Int 
+
+  transaction Transaction[]
+}
